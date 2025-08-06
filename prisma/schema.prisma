@@ -1,0 +1,174 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  MEMBRE
+}
+
+enum UserType {
+  ETUDIANT
+  ENSEIGNANT
+  ANCIEN
+  AUTRE
+}
+
+model User {
+  id            String       @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  password      String
+
+  firstName     String
+  lastName      String
+
+  profileImage  String?
+
+  role          UserRole  @default(USER)
+  hasVerifiedEmail Boolean @default(false)
+  userType UserType @default(AUTRE)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  participations EventParticipant[]
+  ledTeams       Team[]  
+
+  notifications      Notification[]  @relation("NotifRecipient")
+  sentNotifications  Notification[]  @relation("NotifSender")
+
+  receivedInvitations TeamInvitation[] @relation("InvitedUser")
+  sentInvitations     TeamInvitation[] @relation("InvitedByUser")
+}
+
+model Event {
+  id                 String    @id @default(cuid())
+
+  title              String
+
+  subtitle           String?
+
+  description        String
+  location           String?
+
+  startDate          DateTime?
+  endDate            DateTime?
+
+  registrationStart  DateTime?
+  registrationEnd    DateTime?
+
+  maxParticipants    Int?
+
+  allowTeams         Boolean   @default(false)
+  maxTeamSize        Int?
+
+  externalLink       String?
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+
+  teams              Team[]
+  participants       EventParticipant[]
+  invitations        TeamInvitation[]
+}
+
+model Team {
+  id        String   @id @default(cuid())
+
+  name      String
+
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId   String
+
+  leader    User     @relation(fields: [leaderId], references: [id], onDelete: Cascade)
+  leaderId  String
+
+  members   EventParticipant[]
+  invitations TeamInvitation[]
+
+  createdAt DateTime @default(now())
+  @@unique([name, eventId])
+}
+
+model EventParticipant {
+  id        String   @id @default(cuid())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId   String
+
+  team      Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId    String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+}
+
+model TeamInvitation {
+  id           String           @id @default(cuid())
+
+  team         Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId       String
+
+  event        Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId      String
+
+  invited      User             @relation("InvitedUser", fields: [invitedId], references: [id], onDelete: Cascade)
+  invitedId    String
+
+  invitedBy    User             @relation("InvitedByUser", fields: [invitedById], references: [id], onDelete: Cascade)
+  invitedById  String
+
+  status       InvitationStatus @default(PENDING)
+  respondedAt  DateTime?
+  createdAt    DateTime         @default(now())
+
+  @@unique([teamId, invitedId])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model Notification {
+  id           String             @id @default(cuid())
+
+  user         User               @relation("NotifRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+
+  fromUser     User?              @relation("NotifSender", fields: [fromUserId], references: [id], onDelete: SetNull)
+  fromUserId   String?
+
+  type         NotificationType
+  message      String
+  link         String?
+  isRead       Boolean            @default(false)
+  createdAt    DateTime           @default(now())
+}
+
+enum NotificationType { //On va peut être pas utiliser des types de notifs finalement.
+  TEAM_INVITATION
+  INVITATION_ACCEPTED
+  INVITATION_DECLINED
+  TEAM_KICK
+  GENERAL
+}
