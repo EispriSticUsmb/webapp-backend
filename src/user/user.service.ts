@@ -3,7 +3,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { verify } from 'argon2';
+import { hash, verify } from 'argon2';
 import { PrismaService } from 'src/prisma.service';
 import { PaginationQueryDto } from 'src/share/dto/pagination-query.dto';
 import { PartialUserDto } from 'src/share/dto/user.dto';
@@ -172,6 +172,14 @@ export class UserService {
     });
   }
 
+  async getUserNotifications(userId: string) {
+    return await this.prisma.notification.findMany({
+      where: {
+        userId,
+      },
+    });
+  }
+
   async ValidUserPassword(userId: string, password: string): Promise<boolean> {
     const hashPassword = (
       await this.prisma.user.findUnique({
@@ -188,5 +196,66 @@ export class UserService {
     } else {
       return false;
     }
+  }
+
+  async getUsersEvent(userId: string) {
+    return (await this.getUser(userId))?.participations;
+  }
+
+  async getUsersNotif(userId: string) {
+    return (await this.getUser(userId))?.notifications;
+  }
+
+  async getUsersReceivedInvitations(userId: string) {
+    return (await this.getUser(userId))?.receivedInvitations;
+  }
+
+  private async hashPassword(password: string): Promise<string> {
+    const hashedpassword = await hash(password);
+    return hashedpassword;
+  }
+
+  async changeUserPassword(userId: string, newPassword: string) {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: await this.hashPassword(newPassword),
+      },
+    });
+  }
+
+  async setUserAdminRole(userId: string) {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        role: 'ADMIN',
+      },
+    });
+  }
+
+  async setUserMemberRole(userId: string) {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        role: 'MEMBRE',
+      },
+    });
+  }
+
+  async setUserUserRole(userId: string) {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        role: 'USER',
+      },
+    });
   }
 }

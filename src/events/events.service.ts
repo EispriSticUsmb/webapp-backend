@@ -8,14 +8,12 @@ import {
 import { PrismaService } from 'src/prisma.service';
 import { EventContentDto } from './dto/eventContent.dto';
 import { UserService } from 'src/user/user.service';
-import { TeamsService } from 'src/teams/teams.service';
 
 @Injectable()
 export class EventsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userService: UserService,
-    private readonly teamService: TeamsService,
   ) {}
 
   async getEvents() {
@@ -162,6 +160,25 @@ export class EventsService {
     return participants !== null;
   }
 
+  async IsInRegistrationPeriod(eventId: string): Promise<boolean> {
+    const event = await this.prisma.event.findUniqueOrThrow({
+      where: {
+        id: eventId,
+      },
+      select: {
+        registrationStart: true,
+        registrationEnd: true,
+      },
+    });
+
+    if (!event.registrationStart || !event.registrationEnd) {
+      return false;
+    }
+
+    const now = new Date();
+    return now >= event.registrationStart && now <= event.registrationEnd;
+  }
+
   async IsEventFull(eventId: string): Promise<boolean> {
     const event = await this.prisma.event.findUniqueOrThrow({
       where: {
@@ -180,13 +197,21 @@ export class EventsService {
     return event._count.participants >= event.maxParticipants;
   }
 
-  async addEventParticipantWithoutTeam(eventId: string, userId: string) {
+  async addEventParticipantWithoutTeam(
+    eventId: string,
+    userId: string,
+    PutByAdmin: boolean = false,
+  ) {
     if (!(await this.getEvent(eventId)))
       throw new NotFoundException("Cet événement n'existe pas !");
     if (!(await this.userService.getUser(userId)))
       throw new BadRequestException("Cet utilisateur n'existe pas !");
     if (await this.IsEventFull(eventId))
       throw new ConflictException('Cet événement est déjà complet !');
+    if (!PutByAdmin && !(await this.IsInRegistrationPeriod(eventId)))
+      throw new ConflictException(
+        "Cet événement n'est pas en période d'inscription de nouveaux membres",
+      );
     if (await this.IsEventAllowingTeams(eventId))
       throw new BadRequestException(
         'Pour participer à cet événement, il faut rejoindre ou créer une équipe !',
@@ -245,12 +270,28 @@ export class EventsService {
     });
   }
 
+  async getTeamByEvent(eventId: string) {
+    return await this.prisma.team.findMany({
+      where: {
+        eventId,
+      },
+      select: {
+        id: true,
+        name: true,
+        eventId: true,
+        leaderId: true,
+        members: true,
+        invitations: true,
+      },
+    });
+  }
+
   async getEventTeam(eventId: string) {
     if (!(await this.IsEventAllowingTeams(eventId)))
       throw new BadRequestException(
         "Cet événement ne peut pas avoir d'équipe !",
       );
-    return await this.teamService.getTeamByEvent(eventId);
+    return await this.getTeamByEvent(eventId);
   }
 
   private async isUserInEvent(

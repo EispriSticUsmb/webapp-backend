@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Request,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -23,6 +24,7 @@ import { StorageService } from 'src/storage/storage.service';
 import { memoryStorage } from 'multer';
 import { NameTeamDto } from 'src/teams/dto/team.dto';
 import { userIdDto } from 'src/user/dto/user.dto';
+import { Response } from 'express';
 
 @Controller('events')
 export class EventsController {
@@ -64,6 +66,19 @@ export class EventsController {
       throw new ForbiddenException("Privilège d'administrateur requis");
     }
     return await this.eventsService.updateEvent(eventId, body);
+  }
+
+  @Get(':eventId/eventImage')
+  async getUserProfileImage(
+    @Param('eventId') eventId: string,
+    @Res() res: Response,
+  ) {
+    const hypotheticalpath =
+      await this.storageService.getEventImagePath(eventId);
+    if (!hypotheticalpath) return res.status(404).end();
+    const { path, mimeType } = hypotheticalpath;
+    res.setHeader('Content-Type', mimeType);
+    return res.sendFile(path);
   }
 
   @Put(':eventId/eventImage')
@@ -125,7 +140,11 @@ export class EventsController {
     const role = await this.userService.role(request.user, userId);
     if (role !== 'ADMIN' && role !== 'SELF')
       throw new ForbiddenException("Privilège d'administrateur requis");
-    await this.eventsService.addEventParticipantWithoutTeam(eventId, userId);
+    await this.eventsService.addEventParticipantWithoutTeam(
+      eventId,
+      userId,
+      role === 'ADMIN',
+    );
   }
 
   @Delete(':eventId/participants')

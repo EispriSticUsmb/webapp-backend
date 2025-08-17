@@ -10,6 +10,7 @@ import {
   Put,
   Query,
   Request,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -23,6 +24,8 @@ import { PartialUserDto } from 'src/share/dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StorageService } from 'src/storage/storage.service';
 import { memoryStorage } from 'multer';
+import { Response } from 'express';
+import { userRenewPasswordDto } from './dto/user.dto';
 
 @Controller('users')
 export class UserController {
@@ -113,6 +116,19 @@ export class UserController {
     }
   }
 
+  @Get(':userId/profileImage')
+  async getUserProfileImage(
+    @Param('userId') userId: string,
+    @Res() res: Response,
+  ) {
+    const hypotheticalpath =
+      await this.storageService.getUserProfileImagePath(userId);
+    if (!hypotheticalpath) return res.status(404).end();
+    const { path, mimeType } = hypotheticalpath;
+    res.setHeader('Content-Type', mimeType);
+    return res.sendFile(path);
+  }
+
   @Put(':userId/profileImage')
   @UseInterceptors(
     FileInterceptor('profileImage', {
@@ -133,5 +149,102 @@ export class UserController {
       throw new ForbiddenException("Privilège d'administrateur requis");
     }
     return await this.storageService.changeProfileImage(userId, profileImage);
+  }
+
+  @Get(':userId/events')
+  @UseGuards(accessTokenAuthGuard)
+  async getUsersEvent(
+    @Param('userId') userId: string,
+    @Request() request: RequestWithUser,
+  ) {
+    const role = await this.userService.role(request.user, userId);
+    if (role !== 'ADMIN' && role !== 'SELF') {
+      throw new ForbiddenException("Privilège d'administrateur requis");
+    }
+    return await this.userService.getUsersEvent(userId);
+  }
+
+  @Get(':userId/notifications')
+  @UseGuards(accessTokenAuthGuard)
+  async getUsersNotif(
+    @Param('userId') userId: string,
+    @Request() request: RequestWithUser,
+  ) {
+    const role = await this.userService.role(request.user, userId);
+    if (role !== 'ADMIN' && role !== 'SELF') {
+      throw new ForbiddenException("Privilège d'administrateur requis");
+    }
+    return await this.userService.getUsersNotif(userId);
+  }
+
+  @Get(':userId/receivedInvitations')
+  @UseGuards(accessTokenAuthGuard)
+  async getUsersReceivedInvitations(
+    @Param('userId') userId: string,
+    @Request() request: RequestWithUser,
+  ) {
+    const role = await this.userService.role(request.user, userId);
+    if (role !== 'ADMIN' && role !== 'SELF') {
+      throw new ForbiddenException("Privilège d'administrateur requis");
+    }
+    return await this.userService.getUsersReceivedInvitations(userId);
+  }
+
+  @Put(':userId/password')
+  @UseGuards(accessTokenAuthGuard)
+  @HttpCode(204)
+  async changePassword(
+    @Param('userId') userId: string,
+    @Request() request: RequestWithUser,
+    @Body() body: userRenewPasswordDto,
+  ) {
+    const role = await this.userService.role(request.user, userId);
+    if (role === 'SELF') {
+      if (
+        !body.oldPassword ||
+        !(await this.userService.ValidUserPassword(userId, body.oldPassword))
+      ) {
+        throw new ForbiddenException('Mot de passe actuel incorrect !');
+      }
+    } else if (role !== 'ADMIN') {
+      throw new ForbiddenException("Privilège d'administrateur requis !");
+    }
+    await this.userService.changeUserPassword(userId, body.newPassword);
+  }
+
+  @Put(':userId/role/admin')
+  @UseGuards(accessTokenAuthGuard)
+  async setUserAdminRole(
+    @Request() request: RequestWithUser,
+    @Param('userId') userId: string,
+  ) {
+    if (!(await this.userService.isAdmin(request.user.userId))) {
+      throw new ForbiddenException("Privilège d'administrateur requis");
+    }
+    return await this.userService.setUserAdminRole(userId);
+  }
+
+  @Put(':userId/role/membre')
+  @UseGuards(accessTokenAuthGuard)
+  async setUserMemberRole(
+    @Request() request: RequestWithUser,
+    @Param('userId') userId: string,
+  ) {
+    if (!(await this.userService.isAdmin(request.user.userId))) {
+      throw new ForbiddenException("Privilège d'administrateur requis");
+    }
+    return await this.userService.setUserMemberRole(userId);
+  }
+
+  @Put(':userId/role/user')
+  @UseGuards(accessTokenAuthGuard)
+  async setUserUserRole(
+    @Request() request: RequestWithUser,
+    @Param('userId') userId: string,
+  ) {
+    if (!(await this.userService.isAdmin(request.user.userId))) {
+      throw new ForbiddenException("Privilège d'administrateur requis");
+    }
+    return await this.userService.setUserUserRole(userId);
   }
 }

@@ -15,6 +15,7 @@ import { accessTokenAuthGuard } from 'src/auth/accessToken.auth.gard';
 import { UserService } from 'src/user/user.service';
 import { RequestWithUser } from 'src/types/user-payload.type';
 import { leaderIdDto, NameTeamDto } from './dto/team.dto';
+import { userIdDto } from 'src/user/dto/user.dto';
 
 @Controller('teams')
 export class TeamsController {
@@ -83,21 +84,87 @@ export class TeamsController {
       throw new ForbiddenException(
         "Tu dois être chef de l'équipe pour changer son dirigeant !",
       );
+    if (!(await this.teamService.IsMemberOfTeam(body.leaderId, teamId)))
+      throw new ForbiddenException(
+        "Le nouveau chef d'équipe doit en faire partie !",
+      );
     return this.teamService.updateLeaderTeam(teamId, body.leaderId);
   }
 
   @Post(':id/members')
-  addTeamMember(@Param('id') teamId: string) {}
-
-  @Delete(':id/members/:userId')
-  removeTeamMember(
+  @UseGuards(accessTokenAuthGuard)
+  async addTeamMember(
     @Param('id') teamId: string,
-    @Param('userId') userId: string,
-  ) {}
+    @Body() body: userIdDto,
+    @Request() request: RequestWithUser,
+  ) {
+    const userId = request.user.userId;
+    if (!(await this.userService.isAdmin(userId)))
+      throw new ForbiddenException("Privilège d'administrateur requis");
+
+    return this.teamService.addUserInTeam(body.userId, teamId);
+  }
+
+  @Delete(':id/members/:memberId')
+  @UseGuards(accessTokenAuthGuard)
+  async removeTeamMember(
+    @Param('id') teamId: string,
+    @Param('memberId') memberId: string,
+    @Request() request: RequestWithUser,
+  ) {
+    const userId = request.user.userId;
+    if (
+      !(
+        (await this.userService.isAdmin(userId)) ||
+        (await this.teamService.isLeaderTeam(teamId, userId))
+      )
+    )
+      throw new ForbiddenException(
+        "Tu dois être chef de l'équipe pour exclure un membre !",
+      );
+    let removerId: undefined | string = undefined;
+    if (await this.teamService.isLeaderTeam(teamId, userId)) removerId = userId;
+    return await this.teamService.removeTeamMember(teamId, memberId, removerId);
+  }
 
   @Get(':id/invitations')
-  getTeamInvitations(@Param('id') teamId: string) {}
+  @UseGuards(accessTokenAuthGuard)
+  async getTeamInvitations(
+    @Param('id') teamId: string,
+    @Request() request: RequestWithUser,
+  ) {
+    const userId = request.user.userId;
+    if (
+      !(
+        (await this.userService.isAdmin(userId)) ||
+        (await this.teamService.isLeaderTeam(teamId, userId))
+      )
+    )
+      throw new ForbiddenException(
+        "Tu dois être membre de l'équipe pour voir ses invitations !",
+      );
+    return await this.teamService.getTeamsInvitaion(teamId);
+  }
 
   @Post(':id/invitations')
-  createTeamInvitations(@Param('id') teamId: string) {}
+  @UseGuards(accessTokenAuthGuard)
+  async createTeamInvitations(
+    @Param('id') teamId: string,
+    @Request() request: RequestWithUser,
+    @Body() body: userIdDto,
+  ) {
+    const userId: string = request.user.userId;
+    if (
+      !(await this.userService.isAdmin(userId)) &&
+      !(await this.teamService.IsMemberOfTeam(userId, teamId))
+    )
+      throw new ForbiddenException(
+        "Vous devez être dans l'équipe pour inviter un utilisateur !",
+      );
+    return await this.teamService.createTeamInvitationhandler(
+      teamId,
+      body.userId,
+      userId,
+    );
+  }
 }

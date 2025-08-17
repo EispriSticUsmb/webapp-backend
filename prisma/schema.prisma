@@ -119,6 +119,7 @@ model EventParticipant {
   createdAt DateTime @default(now())
 
   @@unique([userId, eventId])
+  @@unique([userId, teamId])
 }
 
 model TeamInvitation {
@@ -136,17 +137,10 @@ model TeamInvitation {
   invitedBy    User             @relation("InvitedByUser", fields: [invitedById], references: [id], onDelete: Cascade)
   invitedById  String
 
-  status       InvitationStatus @default(PENDING)
   respondedAt  DateTime?
   createdAt    DateTime         @default(now())
 
   @@unique([teamId, invitedId])
-}
-
-enum InvitationStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
 }
 
 model Notification {
@@ -158,15 +152,16 @@ model Notification {
   fromUser     User?              @relation("NotifSender", fields: [fromUserId], references: [id], onDelete: SetNull)
   fromUserId   String?
 
-  type         NotificationType
+  type         NotificationType   @default(GENERAL)
   message      String
   link         String?
   isRead       Boolean            @default(false)
   createdAt    DateTime           @default(now())
 }
 
-enum NotificationType { //On va peut être pas utiliser des types de notifs finalement.
+enum NotificationType {
   TEAM_INVITATION
+  TEAM_INVITATION_DELETE
   INVITATION_ACCEPTED
   INVITATION_DECLINED
   TEAM_KICK

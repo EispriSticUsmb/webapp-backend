@@ -7,5 +7,6 @@ import { StorageService } from 'src/storage/storage.service';
 @Module({
   providers: [UserService, PrismaService, StorageService],
   controllers: [UserController],
+  exports: [UserService],
 })
 export class UserModule {}

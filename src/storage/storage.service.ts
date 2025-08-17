@@ -8,6 +8,8 @@ import { PrismaService } from 'src/prisma.service';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
+import { lookup } from 'mime-types';
+import { fileTypeFromFile } from 'file-type';
 
 @Injectable()
 export class StorageService {
@@ -34,10 +36,43 @@ export class StorageService {
     }
   }
 
+  async getUserProfileImagePath(
+    userId: string,
+  ): Promise<{ path: string; mimeType: string } | null> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        profileImage: true,
+      },
+    });
+    if (!user || !user.profileImage) return null;
+    const imagePath = path.join(this.uploadFolder, 'users', user.profileImage);
+    if (!fs.existsSync(imagePath)) return null;
+    const mimeType = lookup(imagePath);
+    if (!mimeType) return null;
+    return {
+      path: imagePath,
+      mimeType,
+    };
+  }
+
+  async getEventImagePath(
+    eventId: string,
+  ): Promise<{ path: string; mimeType: string } | null> {
+    const Imagepath = path.join(this.uploadFolder, 'events', eventId);
+    if (!fs.existsSync(Imagepath)) return null;
+    const hypotheticalpathType = await fileTypeFromFile(Imagepath);
+    if (!hypotheticalpathType) return null;
+    const { mime } = hypotheticalpathType;
+    if (!mime) return null;
+    return { path: Imagepath, mimeType: mime };
+  }
+
   async changeEventImage(eventId: string, eventImage: Express.Multer.File) {
     this.IsValidPicture(eventImage);
-    const extension = path.extname(eventImage.originalname);
-    const filename = eventId + extension;
+    const filename = eventId;
     const filepath = path.join(this.uploadFolder, '/events', filename);
     try {
       if (fs.existsSync(filepath)) {
