@@ -42,10 +42,23 @@ export class AuthService {
     };
   }
 
+  private capitalize(texte: string): string {
+    return texte.charAt(0).toUpperCase() + texte.slice(1).toLowerCase();
+  }
+
   async register(authBody: registerCredentialsDto) {
+    authBody.firstName = this.capitalize(authBody.firstName);
+    authBody.lastName = authBody.lastName.toUpperCase();
+    authBody.username = authBody.username.toLowerCase();
+    authBody.email = authBody.email.toLowerCase();
     const existingUser = await this.prisma.user.findFirst({
       where: {
-        OR: [{ username: authBody.username }, { email: authBody.email }],
+        OR: [
+          { username: authBody.username },
+          { email: authBody.email },
+          { firstName: authBody.firstName },
+          { lastName: authBody.lastName },
+        ],
       },
     });
 
@@ -55,6 +68,16 @@ export class AuthService {
       }
       if (existingUser.email === authBody.email) {
         throw new ConflictException('Email déjà utilisé');
+      }
+      if (existingUser.firstName === authBody.firstName) {
+        throw new ConflictException(
+          'Un utilisateur avec ce nom et ce prénom existe déjà !',
+        );
+      }
+      if (existingUser.lastName === authBody.lastName) {
+        throw new ConflictException(
+          'Un utilisateur avec ce nom et ce prénom existe déjà !',
+        );
       }
     }
 

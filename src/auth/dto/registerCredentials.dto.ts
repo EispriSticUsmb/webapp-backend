@@ -25,6 +25,9 @@ export class registerCredentialsDto {
   @Matches(/^[^@]+$/, {
     message: 'Le caractère @ est interdit dans le pseudo !',
   })
+  @Matches(/^[a-zA-Z0-9._-]+$/, {
+    message: 'Le pseudo contient des caractères non autorisés !',
+  })
   username: string;
 
   @IsNotEmpty({ message: 'Le mot de passe est requis' })
@@ -40,11 +43,17 @@ export class registerCredentialsDto {
   @MaxLength(80, {
     message: 'Le prénom doit contenir au plus 80 caractères',
   })
+  @Matches(/^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$/, {
+    message: 'Le prénom contient des caractères non autorisés !',
+  })
   firstName: string;
 
   @IsString()
   @MaxLength(100, {
     message: 'Le nom de famille doit contenir au plus 100 caractères',
+  })
+  @Matches(/^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$/, {
+    message: 'Le nom contient des caractères non autorisés !',
   })
   lastName: string;
 
