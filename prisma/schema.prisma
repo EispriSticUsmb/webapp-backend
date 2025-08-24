@@ -53,6 +53,8 @@ model User {
   receivedInvitations TeamInvitation[] @relation("InvitedUser")
   sentInvitations     TeamInvitation[] @relation("InvitedByUser")
 
+  site Site?
+
   @@unique([firstName,lastName])
 }
 
@@ -168,4 +170,23 @@ enum NotificationType {
   INVITATION_DECLINED
   TEAM_KICK
   GENERAL
+}
+
+enum SiteStatus {
+  SUSPENDED
+  PENDING
+  ACTIVE
+  DELETED
+}
+
+model Site {
+  id        String     @id @default(cuid())
+  status    SiteStatus @default(PENDING)
+  domain    String?    @unique
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
 }
