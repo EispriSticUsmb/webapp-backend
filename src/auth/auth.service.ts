@@ -56,8 +56,12 @@ export class AuthService {
         OR: [
           { username: authBody.username },
           { email: authBody.email },
-          { firstName: authBody.firstName },
-          { lastName: authBody.lastName },
+          {
+            AND: [
+              { firstName: authBody.firstName },
+              { lastName: authBody.lastName },
+            ],
+          },
         ],
       },
     });
