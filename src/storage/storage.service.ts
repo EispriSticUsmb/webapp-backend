@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
@@ -13,6 +14,7 @@ import { fileTypeFromFile } from 'file-type';
 
 @Injectable()
 export class StorageService {
+  private readonly logger = new Logger(StorageService.name);
   private readonly uploadFolder = path.resolve(
     __dirname,
     '..',
@@ -80,7 +82,7 @@ export class StorageService {
       }
       await fs.promises.writeFile(filepath, eventImage.buffer);
     } catch (err) {
-      console.log(err);
+      this.logger.log(err);
       throw new InternalServerErrorException(
         "Erreur lors de lors de l'enregistrement de l'image",
       );
@@ -94,7 +96,7 @@ export class StorageService {
         await fs.promises.unlink(filePathOnDisk);
       }
     } catch (err) {
-      console.log(err);
+      this.logger.log(err);
     }
   }
 
@@ -129,7 +131,7 @@ export class StorageService {
         .jpeg({ quality: 80 })
         .toFile(filepath);
     } catch (error: unknown) {
-      console.log('Erreur traitement image:', error);
+      this.logger.log('Erreur traitement image:', error);
       throw new BadRequestException("Impossible de traiter l'image");
     }
     await this.prisma.user.update({
@@ -148,7 +150,7 @@ export class StorageService {
         );
         await fs.promises.unlink(userStorage);
       } catch (err) {
-        console.log(err);
+        this.logger.log(err);
       }
     }
     return formattedDate + '.jpeg';

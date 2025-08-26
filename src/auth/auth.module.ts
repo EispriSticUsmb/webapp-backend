@@ -1,4 +1,4 @@
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Logger, Module, OnModuleInit } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { PrismaService } from 'src/prisma.service';
@@ -24,6 +24,7 @@ import { UserType } from 'src/user/user.model';
   ],
 })
 export class AuthModule implements OnModuleInit {
+  private readonly logger = new Logger(AuthModule.name);
   constructor(private readonly authService: AuthService) {}
 
   async onModuleInit() {
@@ -35,7 +36,7 @@ export class AuthModule implements OnModuleInit {
     const userTypeEnv = process.env.ADMIN_USERTYPE;
     if (email && username && password && firstName && lastName && userTypeEnv) {
       if (await this.authService.isAdminDefaultUserExist(username)) {
-        console.log('Administrateur par défaut disponible');
+        this.logger.log('Administrateur par défaut disponible');
       } else {
         const userType = userTypeEnv as UserType;
         try {
@@ -47,18 +48,18 @@ export class AuthModule implements OnModuleInit {
             lastName,
             userType,
           });
-          console.log('Administrateur par défaut créé');
+          this.logger.log('Administrateur par défaut créé');
         } catch (err) {
-          console.warn(
+          this.logger.warn(
             "Echecs lors de la création de l'administrateur par défaut",
           );
-          console.warn(err);
+          this.logger.warn(err);
         }
       }
 
       return;
     } else {
-      console.warn(
+      this.logger.warn(
         "Les variables d'environnement de l'utilisateur par défaut ne sont pas correctes !",
       );
     }

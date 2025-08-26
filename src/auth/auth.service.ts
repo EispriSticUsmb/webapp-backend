@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { CredentialsDto } from './dto/credentials.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -112,7 +114,7 @@ export class AuthService {
         userId: createdUser.id,
       };
     } catch (_) {
-      console.log(_);
+      this.logger.log(_);
       throw new InternalServerErrorException(
         "Une erreur est survenue lors de la création de l'utilisateur",
       );
