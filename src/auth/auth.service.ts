@@ -42,6 +42,14 @@ export class AuthService {
     };
   }
 
+  async isAdminDefaultUserExist(username: string) {
+    return await this.prisma.user.findUnique({
+      where: {
+        username,
+      },
+    });
+  }
+
   private capitalize(texte: string): string {
     return texte.charAt(0).toUpperCase() + texte.slice(1).toLowerCase();
   }
