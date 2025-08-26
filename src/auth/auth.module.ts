@@ -25,7 +25,10 @@ import { UserType } from 'src/user/user.model';
 })
 export class AuthModule implements OnModuleInit {
   private readonly logger = new Logger(AuthModule.name);
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   async onModuleInit() {
     const email = process.env.ADMIN_EMAIL;
@@ -40,7 +43,7 @@ export class AuthModule implements OnModuleInit {
       } else {
         const userType = userTypeEnv as UserType;
         try {
-          await this.authService.register({
+          const AdminUser = await this.authService.register({
             email,
             username,
             password,
@@ -48,6 +51,7 @@ export class AuthModule implements OnModuleInit {
             lastName,
             userType,
           });
+          await this.userService.setUserAdminRole(AdminUser.userId);
           this.logger.log('Administrateur par défaut créé');
         } catch (err) {
           this.logger.warn(
