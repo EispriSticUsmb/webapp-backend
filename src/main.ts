@@ -9,7 +9,7 @@ async function bootstrap() {
   app.use(cookieParser());
   //app.setGlobalPrefix('api');
   app.enableCors({
-    origin: ['http://localhost:4200', 'http://localhost:3000'],
+    origin: true,
     credentials: true,
   });
   await app.listen(Number(process.env.API_PORT ?? 3000));
