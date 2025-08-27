@@ -173,10 +173,12 @@ enum NotificationType {
 }
 
 enum SiteStatus {
+  MAINTENANCE
   SUSPENDED
   PENDING
   ACTIVE
   DELETED
+  UNKNOWN
 }
 
 model Site {
