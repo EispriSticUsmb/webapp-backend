@@ -2,4 +2,4 @@
 
 set -ex
 npx prisma migrate deploy
-npx nest start
+npm run start
