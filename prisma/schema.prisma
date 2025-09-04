@@ -63,7 +63,7 @@ model Event {
 
   title              String
 
-  subtitle           String?
+  descriptionSummary           String?
 
   description        String
   location           String?

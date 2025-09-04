@@ -21,7 +21,7 @@ export class EventContentDto {
   @MaxLength(512, {
     message: 'Le sous-titre ne doit pas dépasser 512 caractères !',
   })
-  subtitle?: string;
+  descriptionSummary?: string;
 
   @IsNotEmpty({ message: 'La description est requise !' })
   @MaxLength(16384, {

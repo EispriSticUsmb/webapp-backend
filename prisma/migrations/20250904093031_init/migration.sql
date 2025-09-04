@@ -23,7 +23,7 @@ CREATE TABLE `User` (
 CREATE TABLE `Event` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
-    `subtitle` VARCHAR(191) NULL,
+    `descriptionSummary` VARCHAR(191) NULL,
     `description` VARCHAR(191) NOT NULL,
     `location` VARCHAR(191) NULL,
     `startDate` DATETIME(3) NULL,

@@ -21,7 +21,7 @@ export class EventsService {
       select: {
         id: true,
         title: true,
-        subtitle: true,
+        descriptionSummary: true,
         description: true,
         location: true,
         startDate: true,
@@ -58,7 +58,7 @@ export class EventsService {
       select: {
         id: true,
         title: true,
-        subtitle: true,
+        descriptionSummary: true,
         description: true,
         location: true,
         startDate: true,
