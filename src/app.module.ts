@@ -11,6 +11,7 @@ import { InvitationsModule } from './invitations/invitations.module';
 import { TeamsModule } from './teams/teams.module';
 import { EventsModule } from './events/events.module';
 import { StorageModule } from './storage/storage.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { StorageModule } from './storage/storage.module';
     InvitationsModule,
     NotificationsModule,
     StorageModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppGateway],

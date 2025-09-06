@@ -12,8 +12,9 @@ import { RequestWithUser } from 'src/types/user-payload.type';
 import { UserService } from 'src/user/user.service';
 import { Response } from 'express';
 import { refreshTokenAuthGuard } from './refreshToken.auth.guard';
-import { CredentialsDto } from './dto/credentials.dto';
+import { CredentialsDto, passwordDto, resetDto } from './dto/credentials.dto';
 import { registerCredentialsDto } from './dto/registerCredentials.dto';
+import { MailTokenAuthGuard } from './mail.auth.gard';
 
 @Controller('auth')
 export class AuthController {
@@ -93,5 +94,22 @@ export class AuthController {
       accessToken,
       user: await this.userService.getUser(request.user.userId),
     };
+  }
+
+  @Post('sendmail')
+  @HttpCode(204)
+  async sendResetMail(@Body() body: resetDto) {
+    await this.authService.sendResetPasswordMail(body.email);
+  }
+
+  @Post('reset')
+  @HttpCode(204)
+  @UseGuards(MailTokenAuthGuard)
+  async resetPassword(
+    @Body() body: passwordDto,
+    @Request() request: RequestWithUser,
+  ) {
+    const userId = request.user.userId;
+    await this.authService.resetPassword(userId, body.password);
   }
 }

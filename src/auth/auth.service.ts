@@ -12,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserPayload } from 'src/types/user-payload.type';
 import { registerCredentialsDto } from './dto/registerCredentials.dto';
 import { CredentialsDto } from './dto/credentials.dto';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +20,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
   async login(authBody: CredentialsDto) {
     const existingUser = await this.prisma.user.findFirst({
@@ -157,5 +159,39 @@ export class AuthService {
         expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || '15m',
       }),
     };
+  }
+
+  async getUserByEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    return user;
+  }
+
+  async sendResetPasswordMail(email: string) {
+    const user = await this.getUserByEmail(email);
+    if (!user) throw new NotFoundException("Cette utilisateur n'existe pas !");
+    const token: string = this.jwtService.sign(
+      { user: user.id },
+      {
+        secret: process.env.MAIL_SECRET,
+        expiresIn: '15m',
+      },
+    );
+    await this.emailService.sendResetPasswordEmail(email, token);
+  }
+
+  async resetPassword(userId: string, password: string) {
+    const hashedPassword: string = await this.hashPassword(password);
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: hashedPassword,
+      },
+    });
   }
 }
