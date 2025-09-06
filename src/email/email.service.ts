@@ -10,6 +10,7 @@ export class EmailService {
   ) {}
 
   async sendResetPasswordEmail(email: string, token: string) {
+    console.log('je rentre bien dans ma fonction');
     const fromEmail = process.env.FROM_EMAIL;
     if (!fromEmail)
       throw new InternalServerErrorException('Erreur interne du serveur');
