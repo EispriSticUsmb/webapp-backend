@@ -11,6 +11,7 @@ import { PrismaService } from 'src/prisma.service';
         host: 'smtp',
         port: 25,
         secure: false,
+        ignoreTLS: true,
       },
       template: {
         dir: __dirname + '/templates',
