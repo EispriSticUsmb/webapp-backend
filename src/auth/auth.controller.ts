@@ -14,7 +14,7 @@ import { Response } from 'express';
 import { refreshTokenAuthGuard } from './refreshToken.auth.guard';
 import { CredentialsDto, passwordDto, resetDto } from './dto/credentials.dto';
 import { registerCredentialsDto } from './dto/registerCredentials.dto';
-import { MailTokenAuthGuard } from './mail.auth.gard';
+import { MailTokenAuthGuard } from './mailToken.auth.gard';
 
 @Controller('auth')
 export class AuthController {

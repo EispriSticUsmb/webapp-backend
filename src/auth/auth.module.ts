@@ -8,6 +8,7 @@ import { refreshTokenStrategy } from './refreshToken.strategy';
 import { UserService } from 'src/user/user.service';
 import { UserType } from 'src/user/user.model';
 import { EmailService } from 'src/email/email.service';
+import { mailTokenStrategy } from './mailToken.strategy';
 
 @Module({
   controllers: [AuthController],
@@ -16,6 +17,7 @@ import { EmailService } from 'src/email/email.service';
     PrismaService,
     accessTokenStrategy,
     refreshTokenStrategy,
+    mailTokenStrategy,
     UserService,
     EmailService,
   ],

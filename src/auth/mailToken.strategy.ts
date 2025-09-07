@@ -4,10 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { UserPayload } from 'src/types/user-payload.type';
 
 @Injectable()
-export class accessTokenStrategy extends PassportStrategy(
-  Strategy,
-  'mailToken',
-) {
+export class mailTokenStrategy extends PassportStrategy(Strategy, 'mailToken') {
   constructor() {
     const secret = process.env.MAIL_SECRET;
     if (!secret) {
