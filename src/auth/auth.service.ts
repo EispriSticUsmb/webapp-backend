@@ -173,13 +173,11 @@ export class AuthService {
   async sendResetPasswordMail(email: string) {
     const user = await this.getUserByEmail(email);
     if (!user) throw new NotFoundException("Cette utilisateur n'existe pas !");
-    const token: string = this.jwtService.sign(
-      { user: user.id },
-      {
-        secret: process.env.MAIL_SECRET,
-        expiresIn: '15m',
-      },
-    );
+    const payLoad: UserPayload = { userId: user.id };
+    const token: string = this.jwtService.sign(payLoad, {
+      secret: process.env.MAIL_SECRET,
+      expiresIn: '15m',
+    });
     await this.emailService.sendResetPasswordEmail(email, token);
   }
 
