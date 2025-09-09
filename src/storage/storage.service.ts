@@ -82,7 +82,7 @@ export class StorageService {
       }
       await fs.promises.writeFile(filepath, eventImage.buffer);
     } catch (err) {
-      this.logger.log(err);
+      this.logger.error(err);
       throw new InternalServerErrorException(
         "Erreur lors de lors de l'enregistrement de l'image",
       );
@@ -96,7 +96,7 @@ export class StorageService {
         await fs.promises.unlink(filePathOnDisk);
       }
     } catch (err) {
-      this.logger.log(err);
+      this.logger.error(err);
     }
   }
 
@@ -131,7 +131,7 @@ export class StorageService {
         .jpeg({ quality: 80 })
         .toFile(filepath);
     } catch (error: unknown) {
-      this.logger.log('Erreur traitement image:', error);
+      this.logger.error('Erreur traitement image:', error);
       throw new BadRequestException("Impossible de traiter l'image");
     }
     await this.prisma.user.update({
@@ -150,7 +150,7 @@ export class StorageService {
         );
         await fs.promises.unlink(userStorage);
       } catch (err) {
-        this.logger.log(err);
+        this.logger.error(err);
       }
     }
     return formattedDate + '.jpeg';
