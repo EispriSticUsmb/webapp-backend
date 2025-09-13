@@ -12,6 +12,11 @@ async function bootstrap() {
     origin: true,
     credentials: true,
   });
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+    }),
+  );
   const port = Number(process.env.API_PORT ?? 3000);
   await app.listen(port, '0.0.0.0');
 }
