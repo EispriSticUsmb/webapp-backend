@@ -121,6 +121,7 @@ export class TeamsService {
         name: true,
         eventId: true,
         leaderId: true,
+        createdAt: true,
         members: {
           select: {
             userId: true,

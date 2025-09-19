@@ -4,6 +4,7 @@ import {
   Delete,
   ForbiddenException,
   Get,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -25,7 +26,9 @@ export class TeamsController {
   ) {}
   @Get(':id')
   async getTeam(@Param('id') teamId: string) {
-    return await this.teamService.getTeam(teamId);
+    const team = await this.teamService.getTeam(teamId);
+    if (!team) throw new NotFoundException('Équipe introuvable !');
+    return team;
   }
 
   @Delete(':id')
