@@ -137,7 +137,7 @@ export class UserService {
         profileImage: true,
         userType: true,
         password: false,
-        id: false,
+        id: true,
         email: false,
         firstName: false,
         lastName: false,
