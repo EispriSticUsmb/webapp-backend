@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -164,6 +165,10 @@ export class TeamsController {
       throw new ForbiddenException(
         "Vous devez être dans l'équipe pour inviter un utilisateur !",
       );
+    if (await this.teamService.IsMemberOfTeam(body.userId, teamId))
+      throw new BadRequestException("Cet utilisateur est déjà dans l'équipe !");
+    if (await this.teamService.IsInvitedOfTeam(body.userId, teamId))
+      throw new BadRequestException('Cet utiliateur a déjà été invité !');
     return await this.teamService.createTeamInvitationhandler(
       teamId,
       body.userId,
