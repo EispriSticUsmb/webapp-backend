@@ -130,6 +130,7 @@ export class TeamsService {
         },
         invitations: {
           select: {
+            id: true,
             invitedId: true,
             invitedById: true,
             createdAt: true,
