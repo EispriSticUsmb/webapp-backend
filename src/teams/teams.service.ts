@@ -95,7 +95,7 @@ export class TeamsService {
     });
   }
 
-  async deleteTeam(id: string): Promise<boolean> {
+  async deleteTeam(id: string) {
     if (!(await this.getTeam(id)))
       throw new NotFoundException("Cette équipe n'existe pas !");
 
@@ -108,7 +108,7 @@ export class TeamsService {
       },
       include: { members: true, invitations: true },
     });
-    return deleteTeam !== null;
+    return deleteTeam;
   }
 
   async getTeam(id: string) {
