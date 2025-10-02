@@ -1,8 +1,21 @@
-import { IsNotEmpty, IsOptional, MaxLength, MinLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class userIdDto {
   @IsNotEmpty({ message: "L'id de l'utilisateur est requis" })
+  @IsString()
   userId: string;
+}
+
+export class identifierDto {
+  @IsNotEmpty({ message: 'Identifiant requis' })
+  @IsString()
+  identifier: string;
 }
 
 export class userRenewPasswordDto {
@@ -16,5 +29,6 @@ export class userRenewPasswordDto {
   @MaxLength(32, {
     message: 'Le nouveau mot de passe doit contenir au maximum 32 caractères',
   })
+  @IsString()
   newPassword: string;
 }

@@ -65,7 +65,7 @@ export class UserService {
     return users;
   }
   async getUser(userId: string) {
-    const users = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: {
         id: userId,
       },
@@ -90,7 +90,36 @@ export class UserService {
         sentInvitations: true,
       },
     });
-    return users;
+    return user;
+  }
+
+  async getUserByIdentifier(identifier: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: identifier }, { username: identifier }],
+      },
+      select: {
+        password: false,
+        id: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        profileImage: true,
+        role: true,
+        hasVerifiedEmail: true,
+        userType: true,
+        createdAt: true,
+        updatedAt: true,
+        participations: true,
+        ledTeams: true,
+        notifications: true,
+        sentNotifications: true,
+        receivedInvitations: true,
+        sentInvitations: true,
+      },
+    });
+    return user;
   }
 
   async updateUser(id: string, data: PartialUserDto) {

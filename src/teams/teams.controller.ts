@@ -17,7 +17,7 @@ import { accessTokenAuthGuard } from 'src/auth/accessToken.auth.gard';
 import { UserService } from 'src/user/user.service';
 import { RequestWithUser } from 'src/types/user-payload.type';
 import { leaderIdDto, NameTeamDto } from './dto/team.dto';
-import { userIdDto } from 'src/user/dto/user.dto';
+import { identifierDto, userIdDto } from 'src/user/dto/user.dto';
 
 @Controller('teams')
 export class TeamsController {
@@ -155,9 +155,11 @@ export class TeamsController {
   async createTeamInvitations(
     @Param('id') teamId: string,
     @Request() request: RequestWithUser,
-    @Body() body: userIdDto,
+    @Body() body: identifierDto,
   ) {
     const userId: string = request.user.userId;
+    const invited = await this.userService.getUserByIdentifier(body.identifier);
+    if (!invited) throw new NotFoundException('Utilisateur introuvable !');
     if (
       !(await this.userService.isAdmin(userId)) &&
       !(await this.teamService.IsMemberOfTeam(userId, teamId))
@@ -165,13 +167,13 @@ export class TeamsController {
       throw new ForbiddenException(
         "Vous devez être dans l'équipe pour inviter un utilisateur !",
       );
-    if (await this.teamService.IsMemberOfTeam(body.userId, teamId))
+    if (await this.teamService.IsMemberOfTeam(invited.id, teamId))
       throw new BadRequestException("Cet utilisateur est déjà dans l'équipe !");
-    if (await this.teamService.IsInvitedOfTeam(body.userId, teamId))
+    if (await this.teamService.IsInvitedOfTeam(invited.id, teamId))
       throw new BadRequestException('Cet utiliateur a déjà été invité !');
     return await this.teamService.createTeamInvitationhandler(
       teamId,
-      body.userId,
+      invited.id,
       userId,
     );
   }

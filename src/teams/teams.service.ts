@@ -92,6 +92,27 @@ export class TeamsService {
       data: {
         name,
       },
+      select: {
+        id: true,
+        name: true,
+        eventId: true,
+        leaderId: true,
+        createdAt: true,
+        members: {
+          select: {
+            userId: true,
+            createdAt: true,
+          },
+        },
+        invitations: {
+          select: {
+            id: true,
+            invitedId: true,
+            invitedById: true,
+            createdAt: true,
+          },
+        },
+      },
     });
   }
 
