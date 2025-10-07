@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { EventsService } from 'src/events/events.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { InvitationsService } from 'src/invitations/invitations.service';
 
 @Module({
   controllers: [TeamsController],
@@ -14,6 +15,7 @@ import { NotificationsService } from 'src/notifications/notifications.service';
     UserService,
     EventsService,
     NotificationsService,
+    InvitationsService,
   ],
   exports: [TeamsService],
 })

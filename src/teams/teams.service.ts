@@ -221,6 +221,17 @@ export class TeamsService {
     }
   }
 
+  async getInvByInvitedIdAndTeamId(teamId: string, invitedId: string) {
+    return await this.prisma.teamInvitation.findUnique({
+      where: {
+        teamId_invitedId: {
+          invitedId,
+          teamId,
+        },
+      },
+    });
+  }
+
   async addUserInTeam(userId: string, teamId: string) {
     const team = await this.getTeam(teamId);
     if (!team) throw new BadRequestException("Cette équipe n'existe pas !");

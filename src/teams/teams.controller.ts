@@ -18,12 +18,15 @@ import { UserService } from 'src/user/user.service';
 import { RequestWithUser } from 'src/types/user-payload.type';
 import { leaderIdDto, NameTeamDto } from './dto/team.dto';
 import { identifierDto, userIdDto } from 'src/user/dto/user.dto';
+import { answerDto } from 'src/invitations/dto/answer.dto';
+import { InvitationsService } from 'src/invitations/invitations.service';
 
 @Controller('teams')
 export class TeamsController {
   constructor(
     private readonly teamService: TeamsService,
     private readonly userService: UserService,
+    private readonly invitationService: InvitationsService,
   ) {}
   @Get(':id')
   async getTeam(@Param('id') teamId: string) {
@@ -176,5 +179,27 @@ export class TeamsController {
       invited.id,
       userId,
     );
+  }
+
+  @Post(':id/invitations/:invitedId/respond')
+  async respondInvitation(
+    @Param('id') teamId: string,
+    @Param('invitedId') invitedId: string,
+    @Request() request: RequestWithUser,
+    @Body() body: answerDto,
+  ) {
+    const userId = request.user.userId;
+    const invitations = await this.teamService.getInvByInvitedIdAndTeamId(
+      teamId,
+      invitedId,
+    );
+    if (!invitations)
+      throw new NotFoundException('Cette invitation est introuvable !');
+    if (
+      userId !== invitations.invitedId &&
+      !(await this.userService.isAdmin(userId))
+    )
+      throw new ForbiddenException("Privilège d'administrateur requis");
+    return await this.invitationService.respondInvitation(invitations.id, body);
   }
 }
