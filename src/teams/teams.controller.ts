@@ -182,6 +182,7 @@ export class TeamsController {
   }
 
   @Post(':id/invitations/:invitedId/respond')
+  @UseGuards(accessTokenAuthGuard)
   async respondInvitation(
     @Param('id') teamId: string,
     @Param('invitedId') invitedId: string,
