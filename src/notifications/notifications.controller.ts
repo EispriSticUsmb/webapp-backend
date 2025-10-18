@@ -43,7 +43,7 @@ export class NotificationsController {
   ) {
     const userId = request.user.userId;
     const notif = await this.notifService.getNotif(notifId);
-    if (notif.userId !== userId || !(await this.userService.isAdmin(userId)))
+    if (notif.userId !== userId && !(await this.userService.isAdmin(userId)))
       throw new ForbiddenException("Privilège d'administrateur requis");
     return notif;
   }
@@ -56,7 +56,7 @@ export class NotificationsController {
   ) {
     const userId = request.user.userId;
     const notif = await this.notifService.getNotif(notifId);
-    if (notif.userId !== userId || !(await this.userService.isAdmin(userId)))
+    if (notif.userId !== userId && !(await this.userService.isAdmin(userId)))
       throw new ForbiddenException("Privilège d'administrateur requis");
     return await this.notifService.markNotifAsRead(notifId);
   }
@@ -69,7 +69,7 @@ export class NotificationsController {
   ) {
     const userId = request.user.userId;
     const notif = await this.notifService.getNotif(notifId);
-    if (notif.userId !== userId || !(await this.userService.isAdmin(userId)))
+    if (notif.userId !== userId && !(await this.userService.isAdmin(userId)))
       throw new ForbiddenException("Privilège d'administrateur requis");
     return await this.notifService.deleteNotif(notifId);
   }
