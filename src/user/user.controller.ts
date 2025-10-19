@@ -4,7 +4,6 @@ import {
   Delete,
   ForbiddenException,
   Get,
-  HttpCode,
   Param,
   Patch,
   Put,
@@ -91,7 +90,6 @@ export class UserController {
 
   @UseGuards(accessTokenAuthGuard)
   @Delete(':userId')
-  @HttpCode(204)
   async DeleteUser(
     @Param('userId') userId: string,
     @Request() request: RequestWithUser,
@@ -192,7 +190,6 @@ export class UserController {
 
   @Put(':userId/password')
   @UseGuards(accessTokenAuthGuard)
-  @HttpCode(204)
   async changePassword(
     @Param('userId') userId: string,
     @Request() request: RequestWithUser,

@@ -50,7 +50,6 @@ export class AuthController {
   }
 
   @Post('logout')
-  @HttpCode(204)
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie(process.env.REFRESHTOKEN_COOKIE_NAME || 'refresh_token', {
       httpOnly: true,
@@ -97,13 +96,11 @@ export class AuthController {
   }
 
   @Post('sendmail')
-  @HttpCode(204)
   async sendResetMail(@Body() body: resetDto) {
     await this.authService.sendResetPasswordMail(body.email);
   }
 
   @Post('reset')
-  @HttpCode(204)
   @UseGuards(MailTokenAuthGuard)
   async resetPassword(
     @Body() body: passwordDto,
