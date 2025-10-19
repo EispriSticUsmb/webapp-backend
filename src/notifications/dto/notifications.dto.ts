@@ -28,7 +28,6 @@ export class CreateNotificationDto {
   message: string;
 
   @IsOptional()
-  @IsUrl({}, { message: 'Le lien doit être une URL valide !' })
   link?: string;
 
   @IsOptional()
