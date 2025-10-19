@@ -1,7 +1,6 @@
 import { UserType } from '@prisma/client';
 import {
   IsEmail,
-  IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
