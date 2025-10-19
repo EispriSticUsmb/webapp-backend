@@ -80,6 +80,7 @@ export class InvitationsService {
         fromUserId: invitation.invitedId,
         type: 'INVITATION_ACCEPTED',
         message: "l'invitation a été accepté",
+        link: invitation.teamId,
       });
       return await this.teamService.addUserInTeam(
         invitation.invitedId,
@@ -91,6 +92,7 @@ export class InvitationsService {
         fromUserId: invitation.invitedId,
         type: 'INVITATION_DECLINED',
         message: "l'invitation a été refusé",
+        link: invitation.teamId,
       });
       await this.prisma.teamInvitation.delete({
         where: {
