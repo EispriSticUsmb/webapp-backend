@@ -146,7 +146,7 @@ export class UserController {
     if (role !== 'ADMIN' && role !== 'SELF') {
       throw new ForbiddenException("Privilège d'administrateur requis");
     }
-    return await this.storageService.changeProfileImage(userId, profileImage);
+    await this.storageService.changeProfileImage(userId, profileImage);
   }
 
   @Get(':userId/events')
