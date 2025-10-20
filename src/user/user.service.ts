@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -125,6 +126,37 @@ export class UserService {
   async updateUser(id: string, data: PartialUserDto) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Utilisateur non trouvé !');
+
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: data.username },
+          { email: data.email },
+          {
+            AND: [{ firstName: data.firstName }, { lastName: data.lastName }],
+          },
+        ],
+      },
+    });
+
+    if (existingUser) {
+      if (existingUser.username === data.username) {
+        throw new ConflictException("Nom d'utilisateur déjà utilisé");
+      }
+      if (existingUser.email === data.email) {
+        throw new ConflictException('Email déjà utilisé');
+      }
+      if (existingUser.firstName === data.firstName) {
+        throw new ConflictException(
+          'Un utilisateur avec ce nom et ce prénom existe déjà !',
+        );
+      }
+      if (existingUser.lastName === data.lastName) {
+        throw new ConflictException(
+          'Un utilisateur avec ce nom et ce prénom existe déjà !',
+        );
+      }
+    }
 
     const updated = await this.prisma.user.update({
       where: { id },
