@@ -328,6 +328,10 @@ export class EventsService {
       throw new BadRequestException("Cet événement n'existe pas !");
     if (!(await this.userService.getUserLite(leaderId)))
       throw new BadRequestException("Cet utilisateur n'existe pas !");
+    if (!(await this.IsInRegistrationPeriod(eventId)))
+      throw new ConflictException(
+        "Cet événement n'est pas en période d'inscription de nouveaux membres",
+      );
     if (!(await this.IsEventAllowingTeams(eventId)))
       throw new BadRequestException(
         "Cet événement ne peut pas avoir d'équipe !",
