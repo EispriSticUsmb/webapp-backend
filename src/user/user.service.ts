@@ -16,11 +16,11 @@ export class UserService {
 
   async role(user: UserPayload | null, userId: string) {
     if (!user) return 'GUEST';
-    if (await this.isAdmin(user.userId)) {
-      return 'ADMIN';
+    if (user.userId === userId) {
+      return 'SELF';
     } else {
-      if (user.userId === userId) {
-        return 'SELF';
+      if (await this.isAdmin(user.userId)) {
+        return 'ADMIN';
       } else {
         return 'USER';
       }
