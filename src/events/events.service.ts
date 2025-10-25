@@ -118,10 +118,6 @@ export class EventsService {
       throw new BadRequestException(
         'Cet utilisateur ne participe pas à cet événement !',
       );
-    if (await this.IsEventAllowingTeams(eventId))
-      throw new BadRequestException(
-        "Pour supprimer cet utilisateur de l'événement, il faut le retirer de l'équipe.",
-      );
     return await this.prisma.eventParticipant.delete({
       where: {
         userId_eventId: {
