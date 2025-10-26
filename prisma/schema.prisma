@@ -65,9 +65,9 @@ model Event {
 
   title              String
 
-  descriptionSummary           String?
+  descriptionSummary String?
 
-  description        String
+  description        String    @db.Text
   location           String?
 
   startDate          DateTime?
