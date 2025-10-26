@@ -54,6 +54,8 @@ model User {
   sentInvitations     TeamInvitation[] @relation("InvitedByUser")
 
   site Site?
+  
+  points         Int      @default(0) 
 
   @@unique([firstName,lastName])
 }

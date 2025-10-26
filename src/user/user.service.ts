@@ -61,6 +61,7 @@ export class UserService {
         sentNotifications: true,
         receivedInvitations: true,
         sentInvitations: true,
+        points: true,
       },
     });
     return users;
@@ -89,6 +90,7 @@ export class UserService {
         sentNotifications: true,
         receivedInvitations: true,
         sentInvitations: true,
+        points: true,
       },
     });
     return user;
@@ -118,6 +120,7 @@ export class UserService {
         sentNotifications: true,
         receivedInvitations: true,
         sentInvitations: true,
+        points: true,
       },
     });
     return user;
@@ -180,6 +183,7 @@ export class UserService {
         sentNotifications: true,
         receivedInvitations: true,
         sentInvitations: true,
+        points: true,
       },
     });
 
@@ -212,6 +216,7 @@ export class UserService {
         sentNotifications: false,
         receivedInvitations: false,
         sentInvitations: false,
+        points: true,
       },
     });
     return users;
@@ -260,15 +265,15 @@ export class UserService {
   }
 
   async getUsersEvent(userId: string) {
-    return (await this.getUser(userId))?.participations;
+    return (await this.getUser(userId))?.participations ?? [];
   }
 
   async getUsersNotif(userId: string) {
-    return (await this.getUser(userId))?.notifications;
+    return (await this.getUser(userId))?.notifications ?? [];
   }
 
   async getUsersReceivedInvitations(userId: string) {
-    return (await this.getUser(userId))?.receivedInvitations;
+    return (await this.getUser(userId))?.receivedInvitations ?? [];
   }
 
   private async hashPassword(password: string): Promise<string> {

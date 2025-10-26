@@ -12,6 +12,7 @@ CREATE TABLE `User` (
     `userType` ENUM('ETUDIANT', 'ENSEIGNANT', 'ANCIEN', 'AUTRE') NOT NULL DEFAULT 'AUTRE',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
+    `points` INTEGER NOT NULL DEFAULT 0,
 
     UNIQUE INDEX `User_email_key`(`email`),
     UNIQUE INDEX `User_username_key`(`username`),
