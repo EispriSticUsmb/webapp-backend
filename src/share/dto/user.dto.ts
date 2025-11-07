@@ -26,6 +26,9 @@ export class PartialUserDto {
   @Matches(/^[^@]+$/, {
     message: 'Le caractère @ est interdit dans le pseudo !',
   })
+  @Matches(/^[a-zA-Z0-9._-]+$/, {
+    message: 'Le pseudo contient des caractères non autorisés !',
+  })
   username?: string;
 
   @IsOptional()
