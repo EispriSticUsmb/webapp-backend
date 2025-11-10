@@ -12,6 +12,7 @@ import { TeamsModule } from './teams/teams.module';
 import { EventsModule } from './events/events.module';
 import { StorageModule } from './storage/storage.module';
 import { EmailModule } from './email/email.module';
+import { RedirectModule } from './redirect/redirect.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { EmailModule } from './email/email.module';
     NotificationsModule,
     StorageModule,
     EmailModule,
+    RedirectModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppGateway],

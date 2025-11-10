@@ -194,3 +194,11 @@ model Site {
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @unique
 }
+
+model Redirect {
+  name      String     @id
+  target    String
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
