@@ -8,7 +8,7 @@ import {
 import { Server } from 'socket.io';
 import { SocketService } from './socket/socket.service';
 
-@WebSocketGateway({ path: '/ws' })
+@WebSocketGateway(Number(process.env.WEBSOCKET_PORT ?? 3001))
 export class AppGateway implements OnGatewayInit {
   @WebSocketServer()
   private readonly server: Server;
