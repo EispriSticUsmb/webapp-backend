@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { CreateNotificationDto } from './dto/notifications.dto';
+import { SocketService } from 'src/socket/socket.service';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly socket: SocketService,
+  ) {}
 
   async markNotifAsRead(notifId: string) {
-    return await this.prisma.notification.update({
+    const notif = await this.prisma.notification.update({
       where: {
         id: notifId,
       },
@@ -15,6 +19,8 @@ export class NotificationsService {
         isRead: true,
       },
     });
+    this.socket.sendWsEvent('users/' + notif.userId, undefined);
+    return notif;
   }
   async getNotif(id: string) {
     const notif = await this.prisma.notification.findUnique({
@@ -28,16 +34,20 @@ export class NotificationsService {
   }
 
   async deleteNotif(notifId: string) {
-    return await this.prisma.notification.delete({
+    const notif = await this.prisma.notification.delete({
       where: {
         id: notifId,
       },
     });
+    this.socket.sendWsEvent('users/' + notif.userId, undefined);
+    return notif;
   }
 
   async createNotif(data: CreateNotificationDto) {
-    return await this.prisma.notification.create({
+    const notif = await this.prisma.notification.create({
       data,
     });
+    this.socket.sendWsEvent('users/' + notif.userId, undefined);
+    return notif;
   }
 }

@@ -25,6 +25,7 @@ import { memoryStorage } from 'multer';
 import { NameTeamDto } from 'src/teams/dto/team.dto';
 import { userIdDto } from 'src/user/dto/user.dto';
 import { Response } from 'express';
+import { SocketService } from 'src/socket/socket.service';
 
 @Controller('events')
 export class EventsController {
@@ -32,6 +33,7 @@ export class EventsController {
     private readonly eventsService: EventsService,
     private readonly userService: UserService,
     private readonly storageService: StorageService,
+    private readonly gateaway: SocketService,
   ) {}
   @Get()
   async getEvents() {
@@ -47,7 +49,9 @@ export class EventsController {
     if (!(await this.userService.isAdmin(request.user.userId))) {
       throw new ForbiddenException("Privilège d'administrateur requis");
     }
-    return await this.eventsService.createEvent(body);
+    const event = await this.eventsService.createEvent(body);
+    this.gateaway.sendWsEvent('events', event);
+    return event;
   }
 
   @Get(':eventId')
@@ -65,7 +69,9 @@ export class EventsController {
     if (!(await this.userService.isAdmin(request.user.userId))) {
       throw new ForbiddenException("Privilège d'administrateur requis");
     }
-    return await this.eventsService.updateEvent(eventId, body);
+    const event = await this.eventsService.updateEvent(eventId, body);
+    this.gateaway.sendWsEvent('events/' + event.id, event);
+    return event;
   }
 
   @Get(':eventId/eventImage')
@@ -115,6 +121,7 @@ export class EventsController {
     }
     await this.eventsService.deleteEvent(eventId);
     await this.storageService.deleteFile('events' + eventId);
+    this.gateaway.sendWsEvent('events', null);
   }
 
   @Get(':eventId/participants')
@@ -145,6 +152,10 @@ export class EventsController {
       userId,
       role === 'ADMIN',
     );
+    this.gateaway.sendWsEvent(
+      'events/' + eventId,
+      await this.eventsService.getEvent(eventId),
+    );
   }
 
   @Delete(':eventId/participants')
@@ -158,7 +169,18 @@ export class EventsController {
     const role = await this.userService.role(request.user, userId);
     if (role !== 'ADMIN' && role !== 'SELF')
       throw new ForbiddenException("Privilège d'administrateur requis");
-    await this.eventsService.deleteParticipantWithoutTeam(eventId, userId);
+    const part = await this.eventsService.deleteParticipantWithoutTeam(
+      eventId,
+      userId,
+    );
+    this.gateaway.sendWsEvent(
+      'events/' + eventId,
+      await this.eventsService.getEvent(eventId),
+    );
+    if (part.teamId) {
+      const team = await this.eventsService.getTeam(part.teamId);
+      this.gateaway.sendWsEvent('teams/' + team!.id, team);
+    }
   }
 
   @Get(':eventId/teams')
@@ -168,15 +190,20 @@ export class EventsController {
 
   @Post(':eventId/teams')
   @UseGuards(accessTokenAuthGuard)
-  createTeamEvent(
+  async createTeamEvent(
     @Param('eventId') eventId: string,
     @Request() request: RequestWithUser,
     @Body() body: NameTeamDto,
   ) {
-    return this.eventsService.createTeam(
+    const team = await this.eventsService.createTeam(
       eventId,
       request.user.userId,
       body.name,
     );
+    this.gateaway.sendWsEvent(
+      'events/' + eventId,
+      await this.eventsService.getEvent(eventId),
+    );
+    return team;
   }
 }

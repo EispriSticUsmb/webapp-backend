@@ -294,7 +294,7 @@ export class TeamsService {
   async removeTeamMember(teamId: string, memberId: string, removerId?: string) {
     if (!(await this.IsMemberOfTeam(memberId, teamId)))
       throw new BadRequestException(
-        'Cet utilisateur ne fait pas partie ce cette équipe !',
+        'Cet utilisateur ne fait pas partie de cette équipe !',
       );
     await this.notifService.createNotif({
       userId: memberId,

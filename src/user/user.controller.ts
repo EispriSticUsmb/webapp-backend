@@ -25,12 +25,14 @@ import { StorageService } from 'src/storage/storage.service';
 import { memoryStorage } from 'multer';
 import { Response } from 'express';
 import { userRenewPasswordDto } from './dto/user.dto';
+import { SocketService } from 'src/socket/socket.service';
 
 @Controller('users')
 export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly storageService: StorageService,
+    private readonly socket: SocketService,
   ) {}
 
   @Get('')

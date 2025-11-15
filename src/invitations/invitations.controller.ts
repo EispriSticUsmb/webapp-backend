@@ -16,6 +16,7 @@ import { UserService } from 'src/user/user.service';
 import { RequestWithUser } from 'src/types/user-payload.type';
 import { answerDto } from './dto/answer.dto';
 import { TeamsService } from 'src/teams/teams.service';
+import { SocketService } from 'src/socket/socket.service';
 
 @Controller('invitations')
 export class InvitationsController {
@@ -23,6 +24,7 @@ export class InvitationsController {
     private readonly invitationService: InvitationsService,
     private readonly userService: UserService,
     private readonly teamService: TeamsService,
+    private readonly gateaway: SocketService,
   ) {}
 
   @Get(':id')
@@ -62,7 +64,18 @@ export class InvitationsController {
       !(await this.userService.isAdmin(userId))
     )
       throw new ForbiddenException("Privilège d'administrateur requis");
-    return await this.invitationService.respondInvitation(invitationsId, body);
+    const inv = await this.invitationService.respondInvitation(
+      invitationsId,
+      body,
+    );
+    if (inv && inv.teamId) {
+      this.gateaway.sendWsEvent(
+        'teams/' + inv.teamId,
+        await this.teamService.getTeam(inv.teamId),
+      );
+    }
+
+    return inv;
   }
 
   @Delete(':id')
@@ -81,6 +94,14 @@ export class InvitationsController {
       !(await this.userService.isAdmin(userId))
     )
       throw new ForbiddenException("Privilège d'administrateur requis");
-    return await this.invitationService.DeleteInvitation(invitationsId);
+    const inv = await this.invitationService.DeleteInvitation(invitationsId);
+    const teamId = invitations?.teamId;
+    if (teamId) {
+      this.gateaway.sendWsEvent(
+        'teams/' + teamId,
+        await this.teamService.getTeam(teamId),
+      );
+    }
+    return inv;
   }
 }

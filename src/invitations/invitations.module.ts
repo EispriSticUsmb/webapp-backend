@@ -6,6 +6,7 @@ import { UserService } from 'src/user/user.service';
 import { TeamsService } from 'src/teams/teams.service';
 import { EventsService } from 'src/events/events.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { SocketModule } from 'src/socket/socket.module';
 
 @Module({
   controllers: [InvitationsController],
@@ -17,6 +18,7 @@ import { NotificationsService } from 'src/notifications/notifications.service';
     EventsService,
     NotificationsService,
   ],
+  imports: [SocketModule],
   exports: [InvitationsService],
 })
 export class InvitationsModule {}

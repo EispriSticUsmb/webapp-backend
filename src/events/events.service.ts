@@ -266,6 +266,34 @@ export class EventsService {
     });
   }
 
+  async getTeam(id: string) {
+    return await this.prisma.team.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        name: true,
+        eventId: true,
+        leaderId: true,
+        createdAt: true,
+        members: {
+          select: {
+            userId: true,
+            createdAt: true,
+          },
+        },
+        invitations: {
+          select: {
+            id: true,
+            invitedId: true,
+            invitedById: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+  }
   async getTeamByEvent(eventId: string) {
     return await this.prisma.team.findMany({
       where: {

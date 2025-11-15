@@ -20,6 +20,8 @@ import { leaderIdDto, NameTeamDto } from './dto/team.dto';
 import { identifierDto, userIdDto } from 'src/user/dto/user.dto';
 import { answerDto } from 'src/invitations/dto/answer.dto';
 import { InvitationsService } from 'src/invitations/invitations.service';
+import { SocketService } from 'src/socket/socket.service';
+import { EventsService } from 'src/events/events.service';
 
 @Controller('teams')
 export class TeamsController {
@@ -27,6 +29,8 @@ export class TeamsController {
     private readonly teamService: TeamsService,
     private readonly userService: UserService,
     private readonly invitationService: InvitationsService,
+    private readonly socket: SocketService,
+    private readonly eventsService: EventsService,
   ) {}
   @Get(':id')
   async getTeam(@Param('id') teamId: string) {
@@ -51,7 +55,12 @@ export class TeamsController {
       throw new ForbiddenException(
         "Tu dois être chef de l'équipe pour la supprimer !",
       );
-    await this.teamService.deleteTeam(teamId);
+    const team = await this.teamService.deleteTeam(teamId);
+    this.socket.sendWsEvent('teams/' + teamId, null);
+    this.socket.sendWsEvent(
+      'events/' + team.eventId,
+      this.eventsService.getEvent(team.eventId),
+    );
   }
 
   @Put(':id/name')
@@ -71,7 +80,13 @@ export class TeamsController {
       throw new ForbiddenException(
         "Tu dois être chef de l'équipe pour changer son nom !",
       );
-    return await this.teamService.ChangeTeamName(teamId, body.name);
+    const team = await this.teamService.ChangeTeamName(teamId, body.name);
+    this.socket.sendWsEvent('teams/' + teamId, team);
+    this.socket.sendWsEvent(
+      'events/' + team.eventId,
+      this.eventsService.getEvent(team.eventId),
+    );
+    return team;
   }
 
   @Put(':id/leaderId')
@@ -95,7 +110,12 @@ export class TeamsController {
       throw new ForbiddenException(
         "Le nouveau chef d'équipe doit en faire partie !",
       );
-    return this.teamService.updateLeaderTeam(teamId, body.leaderId);
+    const team = await this.teamService.updateLeaderTeam(teamId, body.leaderId);
+    this.socket.sendWsEvent(
+      'teams/' + teamId,
+      await this.teamService.getTeam(teamId),
+    );
+    return team;
   }
 
   @Post(':id/members')
@@ -109,7 +129,12 @@ export class TeamsController {
     if (!(await this.userService.isAdmin(userId)))
       throw new ForbiddenException("Privilège d'administrateur requis");
 
-    return this.teamService.addUserInTeam(body.userId, teamId);
+    const inv = this.teamService.addUserInTeam(body.userId, teamId);
+    this.socket.sendWsEvent(
+      'teams/' + teamId,
+      await this.teamService.getTeam(teamId),
+    );
+    return inv;
   }
 
   @Delete(':id/members/:memberId')
@@ -131,7 +156,16 @@ export class TeamsController {
       );
     let removerId: undefined | string = undefined;
     if (await this.teamService.isLeaderTeam(teamId, userId)) removerId = userId;
-    return await this.teamService.removeTeamMember(teamId, memberId, removerId);
+    const team = await this.teamService.removeTeamMember(
+      teamId,
+      memberId,
+      removerId,
+    );
+    this.socket.sendWsEvent(
+      'teams/' + teamId,
+      await this.teamService.getTeam(teamId),
+    );
+    return team;
   }
 
   @Get(':id/invitations')
@@ -174,11 +208,16 @@ export class TeamsController {
       throw new BadRequestException("Cet utilisateur est déjà dans l'équipe !");
     if (await this.teamService.IsInvitedOfTeam(invited.id, teamId))
       throw new BadRequestException('Cet utiliateur a déjà été invité !');
-    return await this.teamService.createTeamInvitationhandler(
+    const inv = await this.teamService.createTeamInvitationhandler(
       teamId,
       invited.id,
       userId,
     );
+    this.socket.sendWsEvent(
+      'teams/' + teamId,
+      await this.teamService.getTeam(teamId),
+    );
+    return inv;
   }
 
   @Post(':id/invitations/:invitedId/respond')
@@ -201,6 +240,14 @@ export class TeamsController {
       !(await this.userService.isAdmin(userId))
     )
       throw new ForbiddenException("Privilège d'administrateur requis");
-    return await this.invitationService.respondInvitation(invitations.id, body);
+    const inv = await this.invitationService.respondInvitation(
+      invitations.id,
+      body,
+    );
+    this.socket.sendWsEvent(
+      'teams/' + teamId,
+      await this.teamService.getTeam(teamId),
+    );
+    return inv;
   }
 }
