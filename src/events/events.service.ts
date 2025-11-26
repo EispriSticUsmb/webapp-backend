@@ -233,6 +233,13 @@ export class EventsService {
         id: true,
         eventId: true,
         userId: true,
+        user: {
+          select: {
+            username: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
         teamId: true,
         createdAt: true,
       },
