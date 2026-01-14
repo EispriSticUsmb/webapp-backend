@@ -14,6 +14,7 @@ import { refreshTokenAuthGuard } from './refreshToken.auth.guard';
 import { CredentialsDto, passwordDto, resetDto } from './dto/credentials.dto';
 import { registerCredentialsDto } from './dto/registerCredentials.dto';
 import { MailTokenAuthGuard } from './mailToken.auth.gard';
+import { seconds, Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -95,6 +96,7 @@ export class AuthController {
   }
 
   @Post('sendmail')
+  @Throttle({ default: { limit: 2, ttl: seconds(300) } })
   async sendResetMail(@Body() body: resetDto) {
     await this.authService.sendResetPasswordMail(body.email);
   }

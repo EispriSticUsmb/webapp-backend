@@ -13,6 +13,8 @@ import { EventsModule } from './events/events.module';
 import { StorageModule } from './storage/storage.module';
 import { EmailModule } from './email/email.module';
 import { RedirectModule } from './redirect/redirect.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -29,8 +31,20 @@ import { RedirectModule } from './redirect/redirect.module';
     StorageModule,
     EmailModule,
     RedirectModule,
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 3,
+          limit: 1,
+        },
+      ],
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService, AppGateway],
+  providers: [
+    AppService,
+    AppGateway,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}
